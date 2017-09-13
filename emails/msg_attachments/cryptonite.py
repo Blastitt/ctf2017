@@ -74,8 +74,8 @@ def main():
     
     # read both files specified by the user
     try:
-        f_private_key = open(private_key_path, "rb")
-        f_public_key  = open(public_key_path, "rb")
+        f_private_key = open(private_key_path, "r")
+        f_public_key  = open(public_key_path, "r")
     except IOError as e:
         print "error: cannot open file: {}".format(str(e))
         exit(1)
@@ -83,6 +83,7 @@ def main():
     # TODO: implement --decode logic
     # ensure multiple of 3 for base64 encoding to work
     max_buffer_size = 1026
+    encode_buffer = ""
     while True:
         privkey_chunk = f_private_key.read(max_buffer_size)
         pubkey_chunk = f_public_key.read(max_buffer_size)
@@ -100,7 +101,6 @@ def main():
             pubkey_chunk = f_public_key.read(max_buffer_size)
         
         must_encode = privkey_chunk
-        encode_buffer = ""
         while len(must_encode):
             bytes_read = 0
             for xc, nc in zip(must_encode, pubkey_chunk):
@@ -115,13 +115,15 @@ def main():
 
             must_encode = must_encode[bytes_read:]
 
-        # flush out anything remaining in the encode_buffer
-        if encode_buffer:
-            encoded_chunk = base64.b64encode(encode_buffer)
-            sys.stdout.write(encoded_chunk)
-    
         sys.stdout.flush()
-    
+
+    # flush out anything remaining in the encode_buffer
+    if encode_buffer:
+        encoded_chunk = base64.b64encode(encode_buffer)
+        sys.stdout.write(encoded_chunk)
+
+    sys.stdout.flush()
+
     f_private_key.close()
     f_public_key.close()    
     
