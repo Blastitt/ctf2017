@@ -89,25 +89,20 @@ def main():
     max_buffer_size = 1026
     temp = tempfile.TemporaryFile()
 
-    # TODO: figure out why chunked base64 decoding is not working
     if mode_decode:
-        # do a first-pass base64 decode
-#        while True:
-#            cypherkey_chunk = f_private_key.read(max_buffer_size)
-#
-#            if not cypherkey_chunk:
-#                break
-#
-#            # assume multiple-of-three chunk
-#            b_decoded_chunk = base64.b64decode(cypherkey_chunk + "==")
-#            temp.write(b_decoded_chunk)
-#
-#        f_private_key.close()
-#        f_private_key = temp
-#        f_private_key.seek(0)
-        cypherkey = f_private_key.read()
-        b_decoded = base64.b64decode(cypherkey)
-        temp.write(b_decoded)
+        while True:
+            # do a first-pass base64 decode
+            # we subtract 2 assuming that the max_buffer_size is a
+            # multiple of 3. Since multiples of 3 have no base64
+            # padding, they are not suitable for decoding without
+            # the risk of some data loss.
+            cypherkey_chunk = f_private_key.read(max_buffer_size - 2)
+
+            if not cypherkey_chunk:
+                break
+
+            b_decoded_chunk = base64.b64decode(cypherkey_chunk)
+            temp.write(b_decoded_chunk)
 
         f_private_key.close()
         f_private_key = temp
