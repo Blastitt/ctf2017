@@ -16,6 +16,7 @@
 import base64
 import os.path
 import sys
+import tempfile
 
 def print_usage():
     print ("usage: cryptonite <private_key | base64_encoded_cypher> "
@@ -34,8 +35,12 @@ def print_help():
 
 def main():
     mode_decode = False
+    args = list()
 
     for arg in sys.argv:
+        if arg[0] != "-":
+            args.append(arg)
+
         if arg in ["--help", "-h"]:
             print_help()
             print "\n"
@@ -46,13 +51,13 @@ def main():
             mode_decode = True
 
     # read commandline arguments
-    if len(sys.argv) < 3:
+    if len(args) < 3:
         print "error: not enough arguments"
         print_usage()
         exit(1)
     
-    private_key_path = sys.argv[1]
-    public_key_path  = sys.argv[2]
+    private_key_path = args[1]
+    public_key_path  = args[2]
 
     # ensure both files exist
     if not os.path.exists(private_key_path):
@@ -80,9 +85,34 @@ def main():
         print "error: cannot open file: {}".format(str(e))
         exit(1)
 
-    # TODO: implement --decode logic
     # ensure multiple of 3 for base64 encoding to work
     max_buffer_size = 1026
+    temp = tempfile.TemporaryFile()
+
+    # TODO: figure out why chunked base64 decoding is not working
+    if mode_decode:
+        # do a first-pass base64 decode
+#        while True:
+#            cypherkey_chunk = f_private_key.read(max_buffer_size)
+#
+#            if not cypherkey_chunk:
+#                break
+#
+#            # assume multiple-of-three chunk
+#            b_decoded_chunk = base64.b64decode(cypherkey_chunk + "==")
+#            temp.write(b_decoded_chunk)
+#
+#        f_private_key.close()
+#        f_private_key = temp
+#        f_private_key.seek(0)
+        cypherkey = f_private_key.read()
+        b_decoded = base64.b64decode(cypherkey)
+        temp.write(b_decoded)
+
+        f_private_key.close()
+        f_private_key = temp
+        f_private_key.seek(0)
+
     encode_buffer = ""
     while True:
         privkey_chunk = f_private_key.read(max_buffer_size)
@@ -99,6 +129,23 @@ def main():
             # the pubkey file more than once if necessary.
             f_public_key.seek(0)
             pubkey_chunk = f_public_key.read(max_buffer_size)
+        
+        if mode_decode:
+            must_decode = privkey_chunk
+            while len(must_decode):
+                bytes_read = 0
+                for xc, nc in zip(must_decode, pubkey_chunk):
+                    encode_buffer += chr(ord(xc) ^ ord(nc))
+                    bytes_read += 1
+
+                    if len(encode_buffer) % max_buffer_size == 0:
+                        sys.stdout.write(encode_buffer)
+                        encode_buffer = ""
+
+                must_decode = must_decode[bytes_read:]
+
+            sys.stdout.flush() 
+            continue
         
         must_encode = privkey_chunk
         while len(must_encode):
@@ -119,7 +166,10 @@ def main():
 
     # flush out anything remaining in the encode_buffer
     if encode_buffer:
-        encoded_chunk = base64.b64encode(encode_buffer)
+        encoded_chunk = encode_buffer
+        if not mode_decode:
+            encoded_chunk = base64.b64encode(encode_buffer)
+
         sys.stdout.write(encoded_chunk)
 
     sys.stdout.flush()
