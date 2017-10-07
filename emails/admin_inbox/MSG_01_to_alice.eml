@@ -1,0 +1,50 @@
+From: Admin <admin@totallyineptsecurity.com>
+To: Alice <alice@totallyineptsecurity.com>
+Subject: Internal Audit
+Date: Sat, 07 Oct 2017 16:57:37 -0400
+
+Alice,
+
+During a recent internal audit, our records indicate
+that we do not yet have a copy of your private GPG
+key.
+
+Internal company policy requires us to have access to
+every employee's records -- this includes potentially
+encrypted email messages created by an employee
+themselves.
+
+Because we believe in putting security above all else
+here at TotallyIneptSecurity, I am attaching an
+executable program (made by our very own security
+experts at the company) that you can use to
+obfuscate your private key before attaching it in a
+reply email to me.
+
+The program's name is `cryptonite` and you will be able
+to find it in your attachments.
+
+I am also attaching a copy of my public GPG key
+(don't worry, I am told those are safe to share as
+plaintext).
+
+To use `cryptonite`, simply execute the program,
+passing the path to your private key as the first parameter
+and the path to my downloaded public key as the second
+parameter. This is completely safe and the operation cannot
+be reversed easily, at all. I have included an example below
+that shows how to obfuscate your private GPG key with
+`cryptnoite`.
+
+
+Using Cryptonite (c):
+--------
+$ ./cryptonite /path/to/your/privkey /path/to/my/pubkey
+
+
+Thanks,
+
+Admin Van Buuren
+Director of Security &
+Music Graduate Student.
+TotallyIneptSecurity, Inc.
