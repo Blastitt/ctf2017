@@ -24,7 +24,7 @@ directory containing email messages for each user.
 Because we champion security through encryption here
 at TotallyIneptSecurity, inc, we make it easy for
 our email clients to encrypt messages using an
-email recipient's public GPG key.
+email recipient's **public GPG key (gpg)**.
 
 To provide this ease-of-use feature to all of our
 email clients, our server stores all employee public
